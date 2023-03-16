@@ -55,7 +55,7 @@ resources/data/tpcds-1/.stamp: tools/generate/tpcds.sh
 	bash $< $(CURDIR)/build/lingodb-debug $(dir $(CURDIR)/$@) 1
 	touch $@
 
-resources/data/job/.stamp: tools/generate/tpcds.sh
+resources/data/job/.stamp: tools/generate/job.sh
 	mkdir -p resources/data/job
 	bash $< $(CURDIR)/build/lingodb-debug $(dir $(CURDIR)/$@) 1
 	touch $@
