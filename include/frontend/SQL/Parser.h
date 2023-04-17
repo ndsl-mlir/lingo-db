@@ -114,10 +114,15 @@ enum class ExpressionType {
    FUNCTION_REF,
    TABLE_REF
 };
+/*
+这些方法的实现都是基于MLIR的类型系统，通过对类型的分析和比较，来推断操作结果的数据类型。
+这个工具类可以被SQL查询执行计划生成器使用，以优化SQL查询的执行效率和效果。
+*/
 struct SQLTypeInference {
    static mlir::FloatType getHigherFloatType(mlir::Type left, mlir::Type right);
    static mlir::IntegerType getHigherIntType(mlir::Type left, mlir::Type right);
    static mlir::db::DecimalType getHigherDecimalType(mlir::Type left, mlir::Type right);
+   //获取两个类型的公共基础类型，即可以包容这两个类型的最小类型.
    static mlir::Type getCommonBaseType(mlir::Type left, mlir::Type right) {
       left = getBaseType(left);
       right = getBaseType(right);
@@ -131,6 +136,7 @@ struct SQLTypeInference {
       if (intPresent) return getHigherIntType(left, right);
       return left;
    }
+   //获取两个类型的公共类型，如果两个类型中有一个可为空，则公共类型也是可为空的.
    static mlir::Type getCommonType(mlir::Type left, mlir::Type right) {
       bool isNullable = left.isa<mlir::db::NullableType>() || right.isa<mlir::db::NullableType>();
       auto commonBaseType = getCommonBaseType(left, right);
@@ -140,6 +146,7 @@ struct SQLTypeInference {
          return commonBaseType;
       }
    }
+   //获取一个类型序列中所有类型的公共基础类型
    static mlir::Type getCommonBaseType(mlir::TypeRange types) {
       mlir::Type commonType = types.front();
       for (auto t : types) {

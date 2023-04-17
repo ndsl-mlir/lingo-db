@@ -8,6 +8,7 @@
 #include "runner/runner.h"
 #include "runtime/ArrowDirDatabase.h"
 
+//这个函数的作用是读取一个文件，并将文件中的每一行作为一个字符串存储在一个容器中，然后返回
 std::vector<std::string> readTestFile(std::string path) {
    std::vector<std::string> res;
    std::string line;
@@ -17,6 +18,7 @@ std::vector<std::string> readTestFile(std::string path) {
    }
    return res;
 }
+//这个函数的作用是过滤掉给定字符串向量中的注释和末尾的空格，返回一个新的字符串向量。
 std::vector<std::string> filterLines(const std::vector<std::string>& lines) {
    std::vector<std::string> res;
    for (auto str : lines) {
@@ -29,6 +31,7 @@ std::vector<std::string> filterLines(const std::vector<std::string>& lines) {
    }
    return res;
 }
+//将输入的字符串按空格分割成若干个子字符串，并存储到数组中返回。
 static std::vector<std::string> split(std::string_view input)
 // Split the input into parts
 {
@@ -49,6 +52,7 @@ static std::vector<std::string> split(std::string_view input)
    }
    return result;
 }
+//该函数接受一个运行上下文（runtime::ExecutionContext）和一组输入行（std::vector<std::string>）。
 void runStatement(runtime::ExecutionContext& context, const std::vector<std::string>& lines, size_t& line) {
    auto parts = split(lines[line]);
    line++;
@@ -61,6 +65,7 @@ void runStatement(runtime::ExecutionContext& context, const std::vector<std::str
       statement += lines[line] + "\n";
       line++;
    }
+   //如果是创建索引语句，直接返回
    if(statement.starts_with("CREATE INDEX")){
       return;
    }
