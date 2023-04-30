@@ -1,26 +1,32 @@
 ARG buildImage="buildimg"
 ARG builtImage="lingodb"
 FROM ubuntu:impish AS baseimg
-RUN sed -i -re 's/([a-z]{2}\.)?archive.ubuntu.com|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-RUN apt-get update
-RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
-RUN apt-get -y install python3-pip python3-venv
+# RUN sed -i -re 's/([a-z]{2}\.)?archive.ubuntu.com|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+RUN sed -i -re 's/([a-z]{2}\.)?archive.ubuntu.com|security.ubuntu.com/mirrors.ustc.edu.cn\/ubuntu-old-releases/g' /etc/apt/sources.list
+RUN apt update
+RUN DEBIAN_FRONTEND="noninteractive" apt -y install tzdata
+RUN apt -y install python3-pip python3-venv
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN pip3 install numpy
 RUN pip3 install Cython
 RUN pip3 install requests moz_sql_parser numpy pandas pyarrow
-RUN apt-get install -y git cmake  ninja-build wget unzip
+RUN apt install -y git cmake ninja-build wget unzip
+RUN apt install -y locales ssh vim
+RUN locale-gen zh_CN
+RUN locale-gen zh_CN.utf8
+ENV LC_ALL zh_CN.UTF-8
+ENV LANG zh_CN.UTF-8
 RUN mkdir /dbgen
 
 
 FROM baseimg AS buildarrow
-RUN apt-get -y install autoconf flex bison libjemalloc-dev libboost-dev \
-                                 libboost-filesystem-dev \
-                                 libboost-system-dev \
-                                 libboost-regex-dev \
-                                 python-dev libssl-dev
+RUN apt -y install autoconf flex bison libjemalloc-dev libboost-dev \
+    libboost-filesystem-dev \
+    libboost-system-dev \
+    libboost-regex-dev \
+    python-dev libssl-dev
 COPY . /arrow-src
 WORKDIR /arrow-src
 RUN git submodule init
@@ -83,8 +89,8 @@ COPY --from=buildllvm /build/llvm/tools/clang/include /build/llvm/tools/clang/in
 FROM ${buildImage} AS lingodb
 COPY . /repo
 WORKDIR /repo
-Run git submodule init
-Run git submodule update tools/python/pybind11
+RUN git submodule init
+RUN git submodule update tools/python/pybind11
 RUN rm -r arrow torch-mlir
 RUN cp -r /arrow-src/arrow arrow
 #RUN cp -r /llvm-src/llvm-project llvm-project
@@ -93,11 +99,11 @@ RUN cp -r /llvm-src/torch-mlir torch-mlir
 RUN mkdir /build/lingodb
 RUN git submodule update tools/python/pybind11
 RUN cmake -G Ninja . -B /build/lingodb\
-           -DMLIR_DIR=/build/llvm/lib/cmake/mlir\
-           -DLLVM_EXTERNAL_LIT=/build/llvm/bin/llvm-lit\
-           -DArrow_DIR="/build/arrow/install/lib/cmake/arrow"\
-           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release 
-        
+    -DMLIR_DIR=/build/llvm/lib/cmake/mlir\
+    -DLLVM_EXTERNAL_LIT=/build/llvm/bin/llvm-lit\
+    -DArrow_DIR="/build/arrow/install/lib/cmake/arrow"\
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release 
+
 RUN cmake --build /build/lingodb -j$(nproc)
 
 
