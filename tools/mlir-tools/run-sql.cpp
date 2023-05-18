@@ -14,6 +14,10 @@ void check(bool b, std::string message) {
    }
 }
 int main(int argc, char** argv) {
+   if (argc <= 2) {
+      std::cerr << "USAGE: run-sql *.sql database" << std::endl;
+      return 1;
+   }
    std::string inputFileName = std::string(argv[1]);
    std::ifstream istream{inputFileName};
    std::stringstream buffer;
@@ -22,10 +26,6 @@ int main(int argc, char** argv) {
    std::cerr << sqlQuery << std::endl;
    runtime::ExecutionContext context;
    context.id = 42;
-   if (argc <= 2) {
-      std::cerr << "USAGE: run-sql *.sql database" << std::endl;
-      return 1;
-   }
    std::cout << "Loading Database from: " << argv[2] << '\n';
    auto database = runtime::Database::loadFromDir(std::string(argv[2]));
    context.db = std::move(database);
