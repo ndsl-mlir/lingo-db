@@ -1,3 +1,4 @@
+set(CMAKE_BUILD_TYPE Debug)
 #mlir-to-sql
 add_executable(mlir-to-sql mlir-to-sql.cpp)
 llvm_update_compile_flags(mlir-to-sql)

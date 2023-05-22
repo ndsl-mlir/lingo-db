@@ -27,6 +27,8 @@ int main(int argc, char** argv) {
    std::stringstream buffer;
    buffer << istream.rdbuf();
    mlir::ModuleOp moduleOp = builder.create<mlir::ModuleOp>(builder.getUnknownLoc());
+   std::cout<<"--"<<std::endl;
+   // moduleOp.dump(); // 输出创建的空模块的中间结果
    frontend::sql::Parser translator(buffer.str(), *metadataDB, moduleOp);
 
    builder.setInsertionPointToStart(moduleOp.getBody());
@@ -43,9 +45,10 @@ int main(int argc, char** argv) {
          builder.create<mlir::func::ReturnOp>(builder.getUnknownLoc());
       }
    }
+   // queryBlock->dump(); // 输出构建的查询块的中间结果
    mlir::func::FuncOp funcOp = builder.create<mlir::func::FuncOp>(builder.getUnknownLoc(), "main", builder.getFunctionType({}, returnTypes));
    funcOp.getBody().push_back(queryBlock);
-
+   // funcOp.dump(); // 输出创建的函数操作的中间结果
    mlir::OpPrintingFlags flags;
    flags.assumeVerified();
    moduleOp->print(llvm::outs(), flags);
